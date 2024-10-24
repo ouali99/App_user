@@ -1,13 +1,33 @@
 {
   "project_info": {
-    "project_number": "759037898579",
-    "project_id": "taxi-services-clone",
-    "storage_bucket": "taxi-services-clone.appspot.com"
+    "project_number": "17472347586",
+    "firebase_url": "https://driversapp-860a0-default-rtdb.firebaseio.com",
+    "project_id": "driversapp-860a0",
+    "storage_bucket": "driversapp-860a0.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:759037898579:android:671b66bd1ff440ea507ba6",
+        "mobilesdk_app_id": "1:17472347586:android:3d7814c7deb3520db64a5b",
+        "android_client_info": {
+          "package_name": "com.example.drivers_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDeAbCFIRx63NR1mTiFh7AVLJKUe9JCI8Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:17472347586:android:86fb1f7de9acedd1b64a5b",
         "android_client_info": {
           "package_name": "com.example.user_taxi_app"
         }
@@ -15,7 +35,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDFAcxNGO6aph2CdEYxJK-uldxNVSH3M3g"
+          "current_key": "AIzaSyDeAbCFIRx63NR1mTiFh7AVLJKUe9JCI8Q"
         }
       ],
       "services": {

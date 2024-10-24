@@ -2,6 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:user_taxi_app/assistants/assistant_methods.dart';
+import 'package:user_taxi_app/global/global.dart';
+import 'package:user_taxi_app/widgets/new_drawer.dart';
 
 import '../authentication/login_screen.dart';
 
@@ -187,9 +190,20 @@ import '../authentication/login_screen.dart';
    }
 
    @override
+  void initState() {
+    super.initState();
+  }
+
+   @override
    Widget build(BuildContext context)
    {
      return Scaffold(
+       appBar: AppBar(),
+       drawer: MyDrawer(
+         name: userModelCurrentInfo!.name,
+         email: userModelCurrentInfo!.email,
+
+       ),
        body: Stack(
          children: [
            GoogleMap(

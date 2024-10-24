@@ -11,13 +11,13 @@ void main() async
   if(Platform.isAndroid){
     await Firebase.initializeApp();
     options: const FirebaseOptions(
-        apiKey: "AIzaSyCfjO3fwcA1jAEnImYf6n1i4oNfMsYD_6M",
-        authDomain: "taxi-services-clone.firebaseapp.com",
-        projectId: "taxi-services-clone",
-        storageBucket: "taxi-services-clone.appspot.com",
-        messagingSenderId: "759037898579",
-        appId: "1:759037898579:web:b3db04a7b195c882507ba6",
-        measurementId: "G-YTZ80CRHYY"
+        apiKey: "AIzaSyB08gztU8CUSFBvlf27UOGUrSvt6mMukfQ",
+        authDomain: "driversapp-860a0.firebaseapp.com",
+        projectId: "driversapp-860a0",
+        storageBucket: "driversapp-860a0.appspot.com",
+        messagingSenderId: "17472347586",
+        appId: "1:17472347586:web:1343f9ea37932254b64a5b",
+        measurementId: "G-LNKY09G06V"
     );
 
   }else{
