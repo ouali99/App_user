@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:user_taxi_app/assistants/assistant_methods.dart';
 import 'package:user_taxi_app/global/global.dart';
-import 'package:user_taxi_app/widgets/new_drawer.dart';
+import 'package:user_taxi_app/widgets/My_drawer.dart';
 
 import '../authentication/login_screen.dart';
 
@@ -22,6 +22,7 @@ import '../authentication/login_screen.dart';
      target: LatLng(45.5017, -73.5673),
      zoom: 14.4746,
    );
+   GlobalKey<ScaffoldState> sKey = GlobalKey<ScaffoldState>();
    blackThemeGoogleMap()
    {
      newgoogleMapController!.setMapStyle('''
@@ -198,7 +199,7 @@ import '../authentication/login_screen.dart';
    Widget build(BuildContext context)
    {
      return Scaffold(
-       appBar: AppBar(),
+       key: sKey,
        drawer: MyDrawer(
          name: userModelCurrentInfo!.name,
          email: userModelCurrentInfo!.email,
@@ -217,7 +218,27 @@ import '../authentication/login_screen.dart';
 
                 blackThemeGoogleMap();
              },
-           )
+           ),
+
+           //custom hamburger button for darawer
+
+           Positioned(
+             top: 37,
+             left: 20,
+             child: GestureDetector(
+               onTap: ()
+               {
+                 sKey.currentState!.openDrawer();
+               },
+               child: const CircleAvatar(
+                 backgroundColor: Colors.grey,
+                 child: Icon(
+                   Icons.menu,
+                   color: Colors.black54,
+                 ),
+               ),
+             ),
+           ),
          ],
        )
      );
