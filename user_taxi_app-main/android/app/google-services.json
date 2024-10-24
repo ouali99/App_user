@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "759037898579",
+    "project_id": "taxi-services-clone",
+    "storage_bucket": "taxi-services-clone.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:759037898579:android:671b66bd1ff440ea507ba6",
+        "android_client_info": {
+          "package_name": "com.example.user_taxi_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDFAcxNGO6aph2CdEYxJK-uldxNVSH3M3g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
