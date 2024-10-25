@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:user_taxi_app/assistants/assistant_methods.dart';
 import 'package:user_taxi_app/global/global.dart';
-import 'package:user_taxi_app/widgets/My_drawer.dart';
+import 'package:user_taxi_app/widgets/my_drawer.dart';
 
 import '../authentication/login_screen.dart';
 
@@ -200,11 +200,20 @@ import '../authentication/login_screen.dart';
    {
      return Scaffold(
        key: sKey,
-       drawer: MyDrawer(
-         name: userModelCurrentInfo!.name,
-         email: userModelCurrentInfo!.email,
-
+       drawer: Container(
+         width: 265,
+         child: Theme(
+             data: Theme.of(context).copyWith(
+               canvasColor: Colors.black,
+             ),
+             child: MyDrawer(
+               name: userModelCurrentInfo!.name,
+               email: userModelCurrentInfo!.email,
+         
+             ),
+           ),
        ),
+
        body: Stack(
          children: [
            GoogleMap(
