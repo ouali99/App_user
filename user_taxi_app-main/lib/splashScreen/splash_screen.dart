@@ -23,7 +23,7 @@ class _MySplashScreenState extends State<MySplashScreen>
 
   startTimer()
   {
-    fAuth.currentUser!= null ?AssistantMethods.readCurrentOnLineUserInfo() :null;
+    fAuth.currentUser!= null ?AssistantMethods.readCurrentOnlineUserInfo() :null;
     Timer(const Duration(seconds: 3), () async
     {
       if(await fAuth.currentUser != null)

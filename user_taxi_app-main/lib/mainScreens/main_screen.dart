@@ -1,40 +1,49 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:provider/provider.dart';
 import 'package:user_taxi_app/assistants/assistant_methods.dart';
+import 'package:user_taxi_app/authentication/login_screen.dart';
 import 'package:user_taxi_app/global/global.dart';
+import 'package:user_taxi_app/mainScreens/search_places_sceen.dart';
 import 'package:user_taxi_app/widgets/my_drawer.dart';
+import '../assistants/assistant_methods.dart';
+import '../infoHandler/app_info.dart';
+class MainScreen extends StatefulWidget
+{
+  @override
+  _MainScreenState createState() => _MainScreenState();
+}
 
-import '../authentication/login_screen.dart';
 
- class MainScreen extends StatefulWidget {
- 
-   @override
-   State<MainScreen> createState() => _MainScreenState();
- }
- 
- class _MainScreenState extends State<MainScreen> {
-   final Completer<GoogleMapController> _controllerGoogleMap =
-   Completer<GoogleMapController>();
-   GoogleMapController ? newgoogleMapController;
-   static const CameraPosition _kMontreal = CameraPosition(
-     target: LatLng(45.5017, -73.5673),
-     zoom: 14.4746,
-   );
-   GlobalKey<ScaffoldState> sKey = GlobalKey<ScaffoldState>();
-   double searchLocationContainerHeight = 220;
 
-   Position? userCurrentPosition;
-   var geoLocator = Geolocator();
 
-   LocationPermission? _locationPermission;
-   double bottomPaddingOfMap = 0;
+class _MainScreenState extends State<MainScreen>
+{
+  final Completer<GoogleMapController> _controllerGoogleMap = Completer();
+  GoogleMapController? newGoogleMapController;
 
-   blackThemeGoogleMap()
-   {
-     newgoogleMapController!.setMapStyle('''
+  static const CameraPosition _kGooglePlex = CameraPosition(
+    target: LatLng(37.42796133580664, -122.085749655962),
+    zoom: 14.4746,
+  );
+
+  GlobalKey<ScaffoldState> sKey = GlobalKey<ScaffoldState>();
+  double searchLocationContainerHeight = 220;
+
+  Position? userCurrentPosition;
+  var geoLocator = Geolocator();
+
+  LocationPermission? _locationPermission;
+  double bottomPaddingOfMap = 0;
+
+
+  blackThemeGoogleMap()
+  {
+    newGoogleMapController!.setMapStyle('''
                     [
                       {
                         "elementType": "geometry",
@@ -197,202 +206,217 @@ import '../authentication/login_screen.dart';
                       }
                     ]
                 ''');
-   }
-
-   checkIfPermissionAllowed() async
-   {
-     _locationPermission = await Geolocator.requestPermission();
-     if(_locationPermission == LocationPermission.denied){
-       _locationPermission = await Geolocator.requestPermission();
-     }
-   }
-
-   locateUserPosition() async
-   {
-     Position cPosition = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-     userCurrentPosition = cPosition;
-     LatLng latLngPosition = LatLng(userCurrentPosition!.latitude, userCurrentPosition!.longitude);
-     CameraPosition cameraPosition = CameraPosition(target: latLngPosition, zoom: 14);
-     
-     newgoogleMapController!.animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
-   }
-
-   @override
-  void initState() {
-
-    super.initState();
-    checkIfPermissionAllowed();
   }
 
-   @override
-   Widget build(BuildContext context)
-   {
-     return Scaffold(
-       key: sKey,
-       drawer: Container(
-         width: 265,
-         child: Theme(
-             data: Theme.of(context).copyWith(
-               canvasColor: Colors.black,
-             ),
-             child: MyDrawer(
-               name: userModelCurrentInfo!.name,
-               email: userModelCurrentInfo!.email,
-         
-             ),
-           ),
-       ),
+  checkIfLocationPermissionAllowed() async
+  {
+    _locationPermission = await Geolocator.requestPermission();
 
-       body: Stack(
-         children: [
-           GoogleMap(
-             padding: EdgeInsets.only(bottom: bottomPaddingOfMap),
-             mapType:MapType.normal ,
-             myLocationEnabled: true,
-             zoomGesturesEnabled: true,
-             zoomControlsEnabled: true,
-             initialCameraPosition: _kMontreal ,
-             onMapCreated: (GoogleMapController controller)
-             {
-                _controllerGoogleMap.complete(controller);
-                newgoogleMapController = controller;
+    if(_locationPermission == LocationPermission.denied)
+    {
+      _locationPermission = await Geolocator.requestPermission();
+    }
+  }
 
-                blackThemeGoogleMap();
+  locateUserPosition() async
+  {
+    Position cPosition = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    userCurrentPosition = cPosition;
 
-                setState(() {
-                  bottomPaddingOfMap =255;
-                });
+    LatLng latLngPosition = LatLng(userCurrentPosition!.latitude, userCurrentPosition!.longitude);
 
-                locateUserPosition();
-             },
-           ),
+    CameraPosition cameraPosition = CameraPosition(target: latLngPosition, zoom: 14);
 
-           //custom hamburger button for darawer
+    newGoogleMapController!.animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
 
-           Positioned(
-             top: 37,
-             left: 20,
-             child: GestureDetector(
-               onTap: ()
-               {
-                 sKey.currentState!.openDrawer();
-               },
-               child: const CircleAvatar(
-                 backgroundColor: Colors.grey,
-                 child: Icon(
-                   Icons.menu,
-                   color: Colors.black54,
-                 ),
-               ),
-             ),
-           ),
+    String humanReadableAddress = await AssistantMethods.searchAddressForGeographicCoOrdinates(userCurrentPosition!, context);
+    print("this is your address = " + humanReadableAddress);
+  }
 
-           //ui for searching
-           Positioned(
-             bottom:0,
-             left:0,
-             right:0,
-             child: AnimatedSize(
-               curve: Curves.easeIn,
-               duration: const Duration(milliseconds: 120),
-               child: Container(
-                 height: searchLocationContainerHeight,
-                   decoration: const BoxDecoration(
-                     color: Colors.black87,
-                     borderRadius: BorderRadius.only(
-                       topRight: Radius.circular(20),
-                       topLeft: Radius.circular(20),
-                     ),
-                   ),
+  @override
+  void initState()
+  {
+    super.initState();
 
-                 child: Padding(
-                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
-                   child: Column(
-                     children: [
-                       //from location
-                       Row(
-                         children: [
-                         Icon(Icons.add_location_alt_outlined, color:Colors.grey),
-                           SizedBox(width: 12.0,),
-                           Column(
-                             crossAxisAlignment: CrossAxisAlignment.start,
-                             children: [
-                               const Text(
-                                 "From",
-                                 style: TextStyle(color: Colors.grey,fontSize: 12),
-                               ),
-                               Text(
-                                 "Your current location",
-                                 style: const TextStyle(color: Colors.grey,fontSize: 14),
-                               ),
-                             ],
-                           )
-                         ],
-                       ),
+    checkIfLocationPermissionAllowed();
+  }
 
-                       const SizedBox(height: 10.0,),
-                       const Divider(
-                         height: 1,
-                         thickness: 1,
-                         color:Colors.grey,
-                       ),
+  @override
+  Widget build(BuildContext context)
+  {
+    return Scaffold(
+      key: sKey,
+      drawer: Container(
+        width: 265,
+        child: Theme(
+          data: Theme.of(context).copyWith(
+            canvasColor: Colors.black,
+          ),
+          child: MyDrawer(
+            name: userModelCurrentInfo!.name,
+            email: userModelCurrentInfo!.email,
+          ),
+        ),
+      ),
+      body: Stack(
+        children: [
 
-                       const SizedBox(height: 16.0,),
+          GoogleMap(
+            padding: EdgeInsets.only(bottom: bottomPaddingOfMap),
+            mapType: MapType.normal,
+            myLocationEnabled: true,
+            zoomGesturesEnabled: true,
+            zoomControlsEnabled: true,
+            initialCameraPosition: _kGooglePlex,
+            onMapCreated: (GoogleMapController controller)
+            {
+              _controllerGoogleMap.complete(controller);
+              newGoogleMapController = controller;
 
-                       Row(
-                         children: [
-                           Icon(Icons.add_location_alt_outlined, color:Colors.grey),
-                           SizedBox(width: 12.0,),
-                           Column(
-                             crossAxisAlignment: CrossAxisAlignment.start,
-                             children: [
-                               const Text(
-                                 "to",
-                                 style: TextStyle(color: Colors.grey,fontSize: 12),
-                               ),
-                               Text(
-                                 "where to go ?",
-                                 style: const TextStyle(color: Colors.grey,fontSize: 14),
-                               ),
-                             ],
-                           )
-                         ],
-                       ),
+              //for black theme google map
+              blackThemeGoogleMap();
 
-                       const SizedBox(height: 10.0,),
-                       const Divider(
-                         height: 1,
-                         thickness: 1,
-                         color:Colors.grey,
-                       ),
+              setState(() {
+                bottomPaddingOfMap = 240;
+              });
 
-                       const SizedBox(height: 16.0,),
+              locateUserPosition();
+            },
+          ),
 
-                       ElevatedButton(
-                         child: const Text(
-                           "Request A Ride",
-                         ),
-                         onPressed: ()
-                         {
+          //custom hamburger button for drawer
+          Positioned(
+            top: 30,
+            left: 14,
+            child: GestureDetector(
+              onTap: ()
+              {
+                sKey.currentState!.openDrawer();
+              },
+              child: const CircleAvatar(
+                backgroundColor: Colors.grey,
+                child: Icon(
+                  Icons.menu,
+                  color: Colors.black54,
+                ),
+              ),
+            ),
+          ),
 
-                         },
-                         style: ElevatedButton.styleFrom(
-                           backgroundColor: Colors.green,
-                           textStyle: const TextStyle(fontSize: 16, fontWeight:FontWeight.bold),
-                         ),
-                       ),
+          //ui for searching location
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: AnimatedSize(
+              curve: Curves.easeIn,
+              duration: const Duration(milliseconds: 120),
+              child: Container(
+                height: searchLocationContainerHeight,
+                decoration: const BoxDecoration(
+                  color: Colors.black87,
+                  borderRadius: BorderRadius.only(
+                    topRight: Radius.circular(20),
+                    topLeft: Radius.circular(20),
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+                  child: Column(
+                    children: [
+                      //from
+                      Row(
+                        children: [
+                          const Icon(Icons.add_location_alt_outlined, color: Colors.grey,),
+                          const SizedBox(width: 12.0,),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                "From",
+                                style: TextStyle(color: Colors.grey, fontSize: 12),
+                              ),
+                              Text(
+                                Provider.of<AppInfo>(context).userPickUpLocation !=null
+                                ? (Provider.of<AppInfo>(context).userPickUpLocation!.locationName!).substring(0,25) + "..."
+                                : "NOT GETTING ADDRESS ",
+                                style: const TextStyle(color: Colors.grey, fontSize: 14),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
 
+                      const SizedBox(height: 10.0),
 
-                     ],
-                   ),
-                 ),
-               ),
-             ) ,
+                      const Divider(
+                        height: 1,
+                        thickness: 1,
+                        color: Colors.grey,
+                      ),
 
-           ),
-         ],
-       )
-     );
-   }
- }
- 
+                      const SizedBox(height: 16.0),
+
+                      //to
+                      GestureDetector(
+                        onTap:(){
+                          Navigator.push(context, MaterialPageRoute(builder: (c) => SearchPlacesSceen()));
+
+                        } ,
+                        child: Row(
+                          children: [
+                            const Icon(Icons.add_location_alt_outlined, color: Colors.grey,),
+                            const SizedBox(width: 12.0,),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  "To",
+                                  style: TextStyle(color: Colors.grey, fontSize: 12),
+                                ),
+                                Text(
+                                  "Where to go?",
+                                  style: const TextStyle(color: Colors.grey, fontSize: 14),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 10.0),
+
+                      const Divider(
+                        height: 1,
+                        thickness: 1,
+                        color: Colors.grey,
+                      ),
+
+                      const SizedBox(height: 16.0),
+
+                      ElevatedButton(
+                        child: const Text(
+                          "Request a Ride",
+                        ),
+                        onPressed: ()
+                        {
+
+                        },
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)
+                        ),
+                      ),
+
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+        ],
+      ),
+    );
+  }
+}

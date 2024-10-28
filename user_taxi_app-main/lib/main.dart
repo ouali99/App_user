@@ -1,9 +1,11 @@
 import 'dart:io';
-
+//import 'dart:js_interop';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:user_taxi_app/infoHandler/app_info.dart';
 import 'package:user_taxi_app/splashScreen/splash_screen.dart';
-//import 'package:users_app/splashScreen/splash_screen.dart';
+//import 'package:user_taxi_app/splashScreen/splash_screen.dart';
 
 void main() async
 {
@@ -26,13 +28,16 @@ await Firebase.initializeApp();
 
   runApp(
     MyApp(
-      child: MaterialApp(
-        title: 'Drivers App',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
+      child: ChangeNotifierProvider(
+        create: (context) =>AppInfo(),
+        child: MaterialApp(
+          title: 'Drivers App',
+          theme: ThemeData(
+            primarySwatch: Colors.blue,
+          ),
+            home: const MySplashScreen(),
+          debugShowCheckedModeBanner: false,
         ),
-          home: const MySplashScreen(),
-        debugShowCheckedModeBanner: false,
       ),
     ),
   );
