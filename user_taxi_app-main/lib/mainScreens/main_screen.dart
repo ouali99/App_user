@@ -1,6 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_geofire/flutter_geofire.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -11,7 +14,10 @@ import 'package:user_taxi_app/global/global.dart';
 import 'package:user_taxi_app/mainScreens/search_places_sceen.dart';
 import 'package:user_taxi_app/widgets/my_drawer.dart';
 import '../assistants/assistant_methods.dart';
+import '../assistants/geofire_assistant.dart';
 import '../infoHandler/app_info.dart';
+import '../models/active_nearby_available_drivers.dart';
+import '../widgets/progress_dialog.dart';
 class MainScreen extends StatefulWidget
 {
   @override
@@ -39,6 +45,23 @@ class _MainScreenState extends State<MainScreen>
 
   LocationPermission? _locationPermission;
   double bottomPaddingOfMap = 0;
+
+  List<LatLng> pLineCoOrdinatesList = [];
+  Set<Polyline> polyLineSet = {};
+
+  Set<Marker> markersSet = {};
+  Set<Circle> circlesSet = {};
+
+  String userName = "your Name";
+  String userEmail = "your Email";
+
+  bool openNavigationDrawer = true;
+
+  bool activeNearbyDriverKeysLoaded = false;
+  BitmapDescriptor? activeNearbyIcon;
+
+
+
 
 
   blackThemeGoogleMap()
@@ -231,6 +254,11 @@ class _MainScreenState extends State<MainScreen>
 
     String humanReadableAddress = await AssistantMethods.searchAddressForGeographicCoOrdinates(userCurrentPosition!, context);
     print("this is your address = " + humanReadableAddress);
+
+    userName = userModelCurrentInfo!.name!;
+    userEmail = userModelCurrentInfo!.email!;
+
+    initializeGeoFireListener();
   }
 
   @override
@@ -244,6 +272,8 @@ class _MainScreenState extends State<MainScreen>
   @override
   Widget build(BuildContext context)
   {
+    createActiveNearByDriverIconMarker();
+
     return Scaffold(
       key: sKey,
       drawer: Container(
@@ -253,8 +283,8 @@ class _MainScreenState extends State<MainScreen>
             canvasColor: Colors.black,
           ),
           child: MyDrawer(
-            name: userModelCurrentInfo!.name,
-            email: userModelCurrentInfo!.email,
+            name: userName,
+            email: userEmail,
           ),
         ),
       ),
@@ -268,6 +298,9 @@ class _MainScreenState extends State<MainScreen>
             zoomGesturesEnabled: true,
             zoomControlsEnabled: true,
             initialCameraPosition: _kGooglePlex,
+            polylines: polyLineSet,
+            markers: markersSet,
+            circles: circlesSet,
             onMapCreated: (GoogleMapController controller)
             {
               _controllerGoogleMap.complete(controller);
@@ -291,12 +324,20 @@ class _MainScreenState extends State<MainScreen>
             child: GestureDetector(
               onTap: ()
               {
-                sKey.currentState!.openDrawer();
+                if(openNavigationDrawer)
+                {
+                  sKey.currentState!.openDrawer();
+                }
+                else
+                {
+                  //restart-refresh-minimize app progmatically
+                  SystemNavigator.pop();
+                }
               },
-              child: const CircleAvatar(
+              child: CircleAvatar(
                 backgroundColor: Colors.grey,
                 child: Icon(
-                  Icons.menu,
+                  openNavigationDrawer ? Icons.menu : Icons.close,
                   color: Colors.black54,
                 ),
               ),
@@ -322,98 +363,107 @@ class _MainScreenState extends State<MainScreen>
                 ),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
-                      child :SingleChildScrollView(
-                      child: Column(
+                  child: Column(
+                    children: [
+                      //from
+                      Row(
                         children: [
-                          //from
-                          Row(
+                          const Icon(Icons.add_location_alt_outlined, color: Colors.grey,),
+                          const SizedBox(width: 12.0,),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Icon(Icons.add_location_alt_outlined, color: Colors.grey,),
-                              const SizedBox(width: 12.0,),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    "From",
-                                    style: TextStyle(color: Colors.grey, fontSize: 12),
-                                  ),
-                                  Text(
-                                    Provider.of<AppInfo>(context).userPickUpLocation != null
-                                        ? (Provider.of<AppInfo>(context).userPickUpLocation!.locationName!).substring(0,24) + "..."
-                                        : "3030 Rue Hochelaga , Montreal , QC H1W 1G2",
-                                    style: const TextStyle(color: Colors.grey, fontSize: 14),
-                                  ),
-                                ],
+                              const Text(
+                                "From",
+                                style: TextStyle(color: Colors.grey, fontSize: 12),
+                              ),
+                              Text(
+                                Provider.of<AppInfo>(context).userPickUpLocation != null
+                                    ? (Provider.of<AppInfo>(context).userPickUpLocation!.locationName!).substring(0,24) + "..."
+                                    : "not getting address",
+                                style: const TextStyle(color: Colors.grey, fontSize: 14),
                               ),
                             ],
                           ),
+                        ],
+                      ),
 
-                          const SizedBox(height: 10.0),
+                      const SizedBox(height: 10.0),
 
-                          const Divider(
-                            height: 1,
-                            thickness: 1,
-                            color: Colors.grey,
-                          ),
+                      const Divider(
+                        height: 1,
+                        thickness: 1,
+                        color: Colors.grey,
+                      ),
 
-                          const SizedBox(height: 16.0),
+                      const SizedBox(height: 16.0),
 
-                          //to
+                      //to
+                      GestureDetector(
+                        onTap: () async
+                        {
+                          //go to search places screen
+                          var responseFromSearchScreen = await Navigator.push(context, MaterialPageRoute(builder: (c)=> SearchPlacesScreen()));
 
-                          GestureDetector(
-                            onTap: ()
-                            {
+                          if(responseFromSearchScreen == "obtainedDropoff")
+                          {
+                            setState(() {
+                              openNavigationDrawer = false;
+                            });
 
-                                Navigator.push(context, MaterialPageRoute(builder: (c)=>SearchPlacesScreen()));
-                            },
-                            child:  Row(
+                            //draw routes - draw polyline
+                            await drawPolyLineFromOriginToDestination();
+                          }
+                        },
+                        child: Row(
+                          children: [
+                            const Icon(Icons.add_location_alt_outlined, color: Colors.grey,),
+                            const SizedBox(width: 12.0,),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Icon(Icons.add_location_alt_outlined, color: Colors.grey,),
-                                SizedBox(width: 12.0,),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      "To",
-                                      style: TextStyle(color: Colors.grey, fontSize: 12),
-                                    ),
-                                    Text(
-                                      "Where to go?",
-                                      style: TextStyle(color: Colors.grey, fontSize: 14),
-                                    ),
-                                  ],
+                                const Text(
+                                  "To",
+                                  style: TextStyle(color: Colors.grey, fontSize: 12),
+                                ),
+                                Text(
+                                  Provider.of<AppInfo>(context).userDropOffLocation != null
+                                      ? Provider.of<AppInfo>(context).userDropOffLocation!.locationName!
+                                      : "Where to go?",
+                                  style: const TextStyle(color: Colors.grey, fontSize: 14),
                                 ),
                               ],
                             ),
-                          ),
-
-                          const SizedBox(height: 10.0),
-
-                          const Divider(
-                            height: 1,
-                            thickness: 1,
-                            color: Colors.grey,
-                          ),
-
-                          const SizedBox(height: 16.0),
-
-                          ElevatedButton(
-                            child: const Text(
-                              "Request a Ride",
-                            ),
-                            onPressed: ()
-                            {
-
-                            },
-                            style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green,
-                                textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)
-                            ),
-                          ),
-
-                        ],
+                          ],
+                        ),
                       ),
+
+                      const SizedBox(height: 10.0),
+
+                      const Divider(
+                        height: 1,
+                        thickness: 1,
+                        color: Colors.grey,
                       ),
+
+                      const SizedBox(height: 16.0),
+
+                      ElevatedButton(
+                        child: const Text(
+                          "Request a Ride",
+                        ),
+                        onPressed: ()
+                        {
+
+                        },
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)
+                        ),
+                      ),
+
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -423,4 +473,221 @@ class _MainScreenState extends State<MainScreen>
       ),
     );
   }
+
+  Future<void> drawPolyLineFromOriginToDestination() async
+  {
+    var originPosition = Provider.of<AppInfo>(context, listen: false).userPickUpLocation;
+    var destinationPosition = Provider.of<AppInfo>(context, listen: false).userDropOffLocation;
+
+    var originLatLng = LatLng(originPosition!.locationLatitude!, originPosition.locationLongitude!);
+    var destinationLatLng = LatLng(destinationPosition!.locationLatitude!, destinationPosition.locationLongitude!);
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) => ProgressDialog(message: "Please wait...",),
+    );
+
+    var directionDetailsInfo = await AssistantMethods.obtainOriginToDestinationDirectionDetails(originLatLng, destinationLatLng);
+
+    Navigator.pop(context);
+
+    print("These are points = ");
+    print(directionDetailsInfo!.e_points);
+
+    PolylinePoints pPoints = PolylinePoints();
+    List<PointLatLng> decodedPolyLinePointsResultList = pPoints.decodePolyline(directionDetailsInfo!.e_points!);
+
+    pLineCoOrdinatesList.clear();
+
+    if(decodedPolyLinePointsResultList.isNotEmpty)
+    {
+      decodedPolyLinePointsResultList.forEach((PointLatLng pointLatLng)
+      {
+        pLineCoOrdinatesList.add(LatLng(pointLatLng.latitude, pointLatLng.longitude));
+      });
+    }
+
+    polyLineSet.clear();
+
+    setState(() {
+      Polyline polyline = Polyline(
+        color: Colors.purpleAccent,
+        polylineId: const PolylineId("PolylineID"),
+        jointType: JointType.round,
+        points: pLineCoOrdinatesList,
+        startCap: Cap.roundCap,
+        endCap: Cap.roundCap,
+        geodesic: true,
+      );
+
+      polyLineSet.add(polyline);
+    });
+
+    LatLngBounds boundsLatLng;
+    if(originLatLng.latitude > destinationLatLng.latitude && originLatLng.longitude > destinationLatLng.longitude)
+    {
+      boundsLatLng = LatLngBounds(southwest: destinationLatLng, northeast: originLatLng);
+    }
+    else if(originLatLng.longitude > destinationLatLng.longitude)
+    {
+      boundsLatLng = LatLngBounds(
+        southwest: LatLng(originLatLng.latitude, destinationLatLng.longitude),
+        northeast: LatLng(destinationLatLng.latitude, originLatLng.longitude),
+      );
+    }
+    else if(originLatLng.latitude > destinationLatLng.latitude)
+    {
+      boundsLatLng = LatLngBounds(
+        southwest: LatLng(destinationLatLng.latitude, originLatLng.longitude),
+        northeast: LatLng(originLatLng.latitude, destinationLatLng.longitude),
+      );
+    }
+    else
+    {
+      boundsLatLng = LatLngBounds(southwest: originLatLng, northeast: destinationLatLng);
+    }
+
+    newGoogleMapController!.animateCamera(CameraUpdate.newLatLngBounds(boundsLatLng, 65));
+
+    Marker originMarker = Marker(
+      markerId: const MarkerId("originID"),
+      infoWindow: InfoWindow(title: originPosition.locationName, snippet: "Origin"),
+      position: originLatLng,
+      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueYellow),
+    );
+
+    Marker destinationMarker = Marker(
+      markerId: const MarkerId("destinationID"),
+      infoWindow: InfoWindow(title: destinationPosition.locationName, snippet: "Destination"),
+      position: destinationLatLng,
+      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
+    );
+
+    setState(() {
+      markersSet.add(originMarker);
+      markersSet.add(destinationMarker);
+    });
+
+    Circle originCircle = Circle(
+      circleId: const CircleId("originID"),
+      fillColor: Colors.green,
+      radius: 12,
+      strokeWidth: 3,
+      strokeColor: Colors.white,
+      center: originLatLng,
+    );
+
+    Circle destinationCircle = Circle(
+      circleId: const CircleId("destinationID"),
+      fillColor: Colors.red,
+      radius: 12,
+      strokeWidth: 3,
+      strokeColor: Colors.white,
+      center: destinationLatLng,
+    );
+
+    setState(() {
+      circlesSet.add(originCircle);
+      circlesSet.add(destinationCircle);
+    });
+  }
+
+  initializeGeoFireListener()
+  {
+    Geofire.initialize("activeDrivers");
+
+    Geofire.queryAtLocation(
+        userCurrentPosition!.latitude, userCurrentPosition!.longitude, 10)!
+        .listen((map) {
+      print(map);
+      if (map != null) {
+        var callBack = map['callBack'];
+
+        //latitude will be retrieved from map['latitude']
+        //longitude will be retrieved from map['longitude']
+
+        switch (callBack)
+            {
+        //whenever any driver become active/online
+          case Geofire.onKeyEntered:
+            ActiveNearbyAvailableDrivers activeNearbyAvailableDriver = ActiveNearbyAvailableDrivers();
+            activeNearbyAvailableDriver.locationLatitude = map['latitude'];
+            activeNearbyAvailableDriver.locationLongitude = map['longitude'];
+            activeNearbyAvailableDriver.driverId = map['key'];
+            GeoFireAssistant.activeNearbyAvailableDriversList.add(activeNearbyAvailableDriver);
+            if(activeNearbyDriverKeysLoaded == true)
+            {
+              displayActiveDriversOnUsersMap();
+            }
+            break;
+
+        //whenever any driver become non-active/offline
+          case Geofire.onKeyExited:
+            GeoFireAssistant.deleteOfflineDriverFromList(map['key']);
+            displayActiveDriversOnUsersMap();
+            break;
+
+        //whenever driver moves - update driver location
+          case Geofire.onKeyMoved:
+            ActiveNearbyAvailableDrivers activeNearbyAvailableDriver = ActiveNearbyAvailableDrivers();
+            activeNearbyAvailableDriver.locationLatitude = map['latitude'];
+            activeNearbyAvailableDriver.locationLongitude = map['longitude'];
+            activeNearbyAvailableDriver.driverId = map['key'];
+            GeoFireAssistant.updateActiveNearbyAvailableDriverLocation(activeNearbyAvailableDriver);
+            displayActiveDriversOnUsersMap();
+            break;
+
+        //display those online/active drivers on user's map
+          case Geofire.onGeoQueryReady:
+            activeNearbyDriverKeysLoaded = true;
+            displayActiveDriversOnUsersMap();
+            break;
+        }
+      }
+
+      setState(() {});
+    });
+  }
+
+  displayActiveDriversOnUsersMap()
+  {
+    setState(() {
+      markersSet.clear();
+      circlesSet.clear();
+
+      Set<Marker> driversMarkerSet = Set<Marker>();
+
+      for(ActiveNearbyAvailableDrivers eachDriver in GeoFireAssistant.activeNearbyAvailableDriversList)
+      {
+        LatLng eachDriverActivePosition = LatLng(eachDriver.locationLatitude!, eachDriver.locationLongitude!);
+
+        Marker marker = Marker(
+          markerId: MarkerId("driver"+eachDriver.driverId!),
+          position: eachDriverActivePosition,
+          icon: activeNearbyIcon!,
+          rotation: 360,
+        );
+
+        driversMarkerSet.add(marker);
+      }
+
+      setState(() {
+        markersSet = driversMarkerSet;
+      });
+    });
+  }
+
+  createActiveNearByDriverIconMarker()
+  {
+    if(activeNearbyIcon == null)
+    {
+      ImageConfiguration imageConfiguration = createLocalImageConfiguration(context, size: const Size(2, 2));
+      BitmapDescriptor.fromAssetImage(imageConfiguration, "images/car.png").then((value)
+      {
+        activeNearbyIcon = value;
+      });
+    }
+  }
 }
+
+
