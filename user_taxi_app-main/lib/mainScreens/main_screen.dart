@@ -338,7 +338,7 @@ class _MainScreenState extends State<MainScreen>
                               ),
                               Text(
                                 Provider.of<AppInfo>(context).userPickUpLocation !=null
-                                ? (Provider.of<AppInfo>(context).userPickUpLocation!.locationName!).substring(0,25) + "..."
+                                ? "${(Provider.of<AppInfo>(context).userPickUpLocation!.locationName!).substring(0,25)}..."
                                 : "NOT GETTING ADDRESS ",
                                 style: const TextStyle(color: Colors.grey, fontSize: 14),
                               ),
