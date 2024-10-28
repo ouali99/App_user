@@ -11,7 +11,7 @@ class PredictedPlaces
     this.secondary_text,
 });
 
-  PredictedPlaces.fromJason(Map<String, dynamic> jsonData){
+  PredictedPlaces.fromJson(Map<String, dynamic> jsonData){
      place_id = jsonData["place_id"];
      main_text = jsonData["main_text"];
      secondary_text = jsonData["secondary_text"];

@@ -8,11 +8,9 @@ class Directions
 
   Directions({
     this.humanReadableAddress,
+    this.locationName,
     this.locationId,
     this.locationLatitude,
     this.locationLongitude,
-    this.locationName,
-
-});
-
+  });
 }

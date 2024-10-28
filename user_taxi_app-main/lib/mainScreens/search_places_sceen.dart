@@ -3,69 +3,86 @@ import 'package:user_taxi_app/assistants/request_assistant.dart';
 import 'package:user_taxi_app/global/map_key.dart';
 import 'package:user_taxi_app/models/predicted_places.dart';
 
-class SearchPlacesSceen extends StatefulWidget {
+import '../widgets/place_prediction_tile.dart';
+
+class SearchPlacesScreen extends StatefulWidget
+{
 
   @override
-  State<SearchPlacesSceen> createState() => _SearchPlacesSceenState();
+  _SearchPlacesScreenState createState() => _SearchPlacesScreenState();
 }
 
 
-class _SearchPlacesSceenState extends State<SearchPlacesSceen> {
 
-  List<PredictedPlaces> placePredictedList = [];
+
+class _SearchPlacesScreenState extends State<SearchPlacesScreen>
+{
+  List<PredictedPlaces> placesPredictedList = [];
 
   void findPlaceAutoCompleteSearch(String inputText) async
   {
+    if(inputText.length > 1) //2 or more than 2 input characters
+        {
+      String urlAutoCompleteSearch = "https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$inputText&key=$mapKey&components=country:PK";
 
-    if(inputText.length > 1)
-    {
+      var responseAutoCompleteSearch = await RequestAssistant.receiveRequest(urlAutoCompleteSearch);
 
-      String urlAutoCompleteSearch = "https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$inputText&key=$mapKey&components=country:yourCountry:CA";
-
-      var responseAutoCompleteSearch =await RequestAssistant.receiveRequest(urlAutoCompleteSearch);
-
-      if(responseAutoCompleteSearch =="Error Occurred, Failed. No Response."){
+      if(responseAutoCompleteSearch == "Error Occurred, Failed. No Response.")
+      {
         return;
       }
-      
-      if(responseAutoCompleteSearch["status"]=="Ok"){
+
+      if(responseAutoCompleteSearch["status"] == "OK")
+      {
         var placePredictions = responseAutoCompleteSearch["predictions"];
-        var placePredictionsList =  (placePredictions as List).map((jsonData)=>PredictedPlaces.fromJason(jsonData)).toList();
-        placePredictedList = placePredictionsList;
+
+        var placePredictionsList = (placePredictions as List).map((jsonData) => PredictedPlaces.fromJson(jsonData)).toList();
+
+        setState(() {
+          placesPredictedList = placePredictionsList;
+        });
       }
     }
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context)
+  {
     return Scaffold(
-      backgroundColor: Colors.black87,
+      backgroundColor: Colors.black,
       body: Column(
         children: [
-          Container(height: 160,
-          decoration: const BoxDecoration(
-            color: Colors.white54,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.white54,
-                blurRadius: 8,
-                spreadRadius: 0.5,
-                offset: Offset(0.7, 0.7),
-              )
-            ]
-          ),
-
+          //search place ui
+          Container(
+            height: 160,
+            decoration: const BoxDecoration(
+              color: Colors.black54,
+              boxShadow:
+              [
+                BoxShadow(
+                  color: Colors.white54,
+                  blurRadius: 8,
+                  spreadRadius: 0.5,
+                  offset: Offset(
+                    0.7,
+                    0.7,
+                  ),
+                ),
+              ],
+            ),
             child: Padding(
               padding: const EdgeInsets.all(10.0),
               child: Column(
                 children: [
-                  const SizedBox(height: 25.0,),
 
+                  const SizedBox(height: 25.0),
 
                   Stack(
                     children: [
+
                       GestureDetector(
-                        onTap: (){
+                        onTap: ()
+                        {
                           Navigator.pop(context);
                         },
                         child: const Icon(
@@ -73,27 +90,28 @@ class _SearchPlacesSceenState extends State<SearchPlacesSceen> {
                           color: Colors.grey,
                         ),
                       ),
+
                       const Center(
                         child: Text(
-                          "Search and set dropOff Location",
+                          "Search & Set DropOff Location",
                           style: TextStyle(
                             fontSize: 18.0,
                             color: Colors.grey,
-                            fontWeight:FontWeight.bold,
-
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
                     ],
                   ),
+
                   const SizedBox(height: 16.0),
 
                   Row(
                     children: [
-                      Icon(
+
+                      const Icon(
                         Icons.adjust_sharp,
                         color: Colors.grey,
-
                       ),
 
                       const SizedBox(width: 18.0,),
@@ -105,10 +123,9 @@ class _SearchPlacesSceenState extends State<SearchPlacesSceen> {
                             onChanged: (valueTyped)
                             {
                               findPlaceAutoCompleteSearch(valueTyped);
-
                             },
                             decoration: const InputDecoration(
-                              hintText: "search here ...",
+                              hintText: "search here...",
                               fillColor: Colors.white54,
                               filled: true,
                               border: InputBorder.none,
@@ -121,6 +138,7 @@ class _SearchPlacesSceenState extends State<SearchPlacesSceen> {
                           ),
                         ),
                       ),
+
                     ],
                   ),
                 ],
@@ -128,10 +146,31 @@ class _SearchPlacesSceenState extends State<SearchPlacesSceen> {
             ),
           ),
 
-
+          //display place predictions result
+          (placesPredictedList.length > 0)
+              ? Expanded(
+            child: ListView.separated(
+              itemCount: placesPredictedList.length,
+              physics: ClampingScrollPhysics(),
+              itemBuilder: (context, index)
+              {
+                return PlacePredictionTileDesign(
+                  predictedPlaces: placesPredictedList[index],
+                );
+              },
+              separatorBuilder: (BuildContext context, int index)
+              {
+                return const Divider(
+                  height: 1,
+                  color: Colors.white,
+                  thickness: 1,
+                );
+              },
+            ),
+          )
+              : Container(),
         ],
       ),
     );
-
   }
 }

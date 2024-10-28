@@ -322,94 +322,98 @@ class _MainScreenState extends State<MainScreen>
                 ),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
-                  child: Column(
-                    children: [
-                      //from
-                      Row(
+                      child :SingleChildScrollView(
+                      child: Column(
                         children: [
-                          const Icon(Icons.add_location_alt_outlined, color: Colors.grey,),
-                          const SizedBox(width: 12.0,),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          //from
+                          Row(
                             children: [
-                              const Text(
-                                "From",
-                                style: TextStyle(color: Colors.grey, fontSize: 12),
-                              ),
-                              Text(
-                                Provider.of<AppInfo>(context).userPickUpLocation !=null
-                                ? "${(Provider.of<AppInfo>(context).userPickUpLocation!.locationName!).substring(0,25)}..."
-                                : "NOT GETTING ADDRESS ",
-                                style: const TextStyle(color: Colors.grey, fontSize: 14),
+                              const Icon(Icons.add_location_alt_outlined, color: Colors.grey,),
+                              const SizedBox(width: 12.0,),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    "From",
+                                    style: TextStyle(color: Colors.grey, fontSize: 12),
+                                  ),
+                                  Text(
+                                    Provider.of<AppInfo>(context).userPickUpLocation != null
+                                        ? (Provider.of<AppInfo>(context).userPickUpLocation!.locationName!).substring(0,24) + "..."
+                                        : "3030 Rue Hochelaga , Montreal , QC H1W 1G2",
+                                    style: const TextStyle(color: Colors.grey, fontSize: 14),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
-                        ],
-                      ),
 
-                      const SizedBox(height: 10.0),
+                          const SizedBox(height: 10.0),
 
-                      const Divider(
-                        height: 1,
-                        thickness: 1,
-                        color: Colors.grey,
-                      ),
+                          const Divider(
+                            height: 1,
+                            thickness: 1,
+                            color: Colors.grey,
+                          ),
 
-                      const SizedBox(height: 16.0),
+                          const SizedBox(height: 16.0),
 
-                      //to
-                      GestureDetector(
-                        onTap:(){
-                          Navigator.push(context, MaterialPageRoute(builder: (c) => SearchPlacesSceen()));
+                          //to
 
-                        } ,
-                        child: Row(
-                          children: [
-                            const Icon(Icons.add_location_alt_outlined, color: Colors.grey,),
-                            const SizedBox(width: 12.0,),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                          GestureDetector(
+                            onTap: ()
+                            {
+
+                                Navigator.push(context, MaterialPageRoute(builder: (c)=>SearchPlacesScreen()));
+                            },
+                            child:  Row(
                               children: [
-                                const Text(
-                                  "To",
-                                  style: TextStyle(color: Colors.grey, fontSize: 12),
-                                ),
-                                Text(
-                                  "Where to go?",
-                                  style: const TextStyle(color: Colors.grey, fontSize: 14),
+                                Icon(Icons.add_location_alt_outlined, color: Colors.grey,),
+                                SizedBox(width: 12.0,),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "To",
+                                      style: TextStyle(color: Colors.grey, fontSize: 12),
+                                    ),
+                                    Text(
+                                      "Where to go?",
+                                      style: TextStyle(color: Colors.grey, fontSize: 14),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
-                          ],
-                        ),
+                          ),
+
+                          const SizedBox(height: 10.0),
+
+                          const Divider(
+                            height: 1,
+                            thickness: 1,
+                            color: Colors.grey,
+                          ),
+
+                          const SizedBox(height: 16.0),
+
+                          ElevatedButton(
+                            child: const Text(
+                              "Request a Ride",
+                            ),
+                            onPressed: ()
+                            {
+
+                            },
+                            style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                                textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)
+                            ),
+                          ),
+
+                        ],
                       ),
-
-                      const SizedBox(height: 10.0),
-
-                      const Divider(
-                        height: 1,
-                        thickness: 1,
-                        color: Colors.grey,
                       ),
-
-                      const SizedBox(height: 16.0),
-
-                      ElevatedButton(
-                        child: const Text(
-                          "Request a Ride",
-                        ),
-                        onPressed: ()
-                        {
-
-                        },
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                            textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)
-                        ),
-                      ),
-
-                    ],
-                  ),
                 ),
               ),
             ),
