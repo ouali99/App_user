@@ -1,13 +1,17 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:smooth_star_rating_nsafe/smooth_star_rating.dart';
 
+import '../assistants/assistant_methods.dart';
 import '../global/global.dart';
+
 
 class SelectNearestActiveDriversScreen extends StatefulWidget
 {
-  const SelectNearestActiveDriversScreen({Key? key}) : super(key: key);
+  DatabaseReference? referenceRideRequest ;
+  SelectNearestActiveDriversScreen({this.referenceRideRequest});
 
   @override
   _SelectNearestActiveDriversScreenState createState() => _SelectNearestActiveDriversScreenState();
@@ -17,6 +21,29 @@ class SelectNearestActiveDriversScreen extends StatefulWidget
 
 class _SelectNearestActiveDriversScreenState extends State<SelectNearestActiveDriversScreen>
 {
+  String fareAmount = "";
+
+  getFareAmountAccordingToVehicleType(int index)
+  {
+    if(tripDirectionDetailsInfo != null)
+    {
+      if(dList[index]["car_details"]["type"].toString() == "bike")
+      {
+        fareAmount = (AssistantMethods.calculateFareAmountFromOriginToDestination(tripDirectionDetailsInfo!) / 2).toStringAsFixed(1);
+      }
+      if(dList[index]["car_details"]["type"].toString() == "uber-x") //means executive type of car - more comfortable pro level
+          {
+        fareAmount = (AssistantMethods.calculateFareAmountFromOriginToDestination(tripDirectionDetailsInfo!) * 2).toStringAsFixed(1);
+      }
+      if(dList[index]["car_details"]["type"].toString() == "uber-go") // non - executive car - comfortable
+          {
+        fareAmount = (AssistantMethods.calculateFareAmountFromOriginToDestination(tripDirectionDetailsInfo!)).toString();
+      }
+    }
+    return fareAmount;
+  }
+
+
   @override
   Widget build(BuildContext context)
   {
@@ -37,6 +64,7 @@ class _SelectNearestActiveDriversScreenState extends State<SelectNearestActiveDr
           onPressed: ()
           {
             //delete/remove the ride request from database
+            widget.referenceRideRequest!.remove();
 
             SystemNavigator.pop();
           },
@@ -90,15 +118,24 @@ class _SelectNearestActiveDriversScreenState extends State<SelectNearestActiveDr
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    "3",
-                    style: TextStyle(
+                    "\$ " + getFareAmountAccordingToVehicleType(index),
+                    style: const TextStyle(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 2,),
                   Text(
-                    "13 km",
-                    style: TextStyle(
+                    tripDirectionDetailsInfo != null ? tripDirectionDetailsInfo!.duration_text! : "",
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black54,
+                        fontSize: 12
+                    ),
+                  ),
+                  const SizedBox(height: 2,),
+                  Text(
+                    tripDirectionDetailsInfo != null ? tripDirectionDetailsInfo!.distance_text! : "",
+                    style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         color: Colors.black54,
                         fontSize: 12
