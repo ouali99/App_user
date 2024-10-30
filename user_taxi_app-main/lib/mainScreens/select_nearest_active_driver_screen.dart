@@ -2,15 +2,18 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:smooth_star_rating_nsafe/smooth_star_rating.dart';
 
 import '../assistants/assistant_methods.dart';
 import '../global/global.dart';
 
 
+
 class SelectNearestActiveDriversScreen extends StatefulWidget
 {
-  DatabaseReference? referenceRideRequest ;
+  DatabaseReference? referenceRideRequest;
+
   SelectNearestActiveDriversScreen({this.referenceRideRequest});
 
   @override
@@ -65,6 +68,7 @@ class _SelectNearestActiveDriversScreenState extends State<SelectNearestActiveDr
           {
             //delete/remove the ride request from database
             widget.referenceRideRequest!.remove();
+            Fluttertoast.showToast(msg: "you have cancelled the ride request.");
 
             SystemNavigator.pop();
           },
@@ -74,74 +78,83 @@ class _SelectNearestActiveDriversScreenState extends State<SelectNearestActiveDr
         itemCount: dList.length,
         itemBuilder: (BuildContext context, int index)
         {
-          return Card(
-            color: Colors.grey,
-            elevation: 3,
-            shadowColor: Colors.green,
-            margin: const EdgeInsets.all(8),
-            child: ListTile(
-              leading: Padding(
-                padding: const EdgeInsets.only(top: 2.0),
-                child: Image.asset(
-                  "images/" + dList[index]["car_details"]["type"].toString() + ".png",
-                  width: 70,
+          return GestureDetector(
+            onTap: ()
+            {
+              setState(() {
+                chosenDriverId = dList[index]["id"].toString();
+              });
+              Navigator.pop(context, "driverChoosed");
+            },
+            child: Card(
+              color: Colors.grey,
+              elevation: 3,
+              shadowColor: Colors.green,
+              margin: const EdgeInsets.all(8),
+              child: ListTile(
+                leading: Padding(
+                  padding: const EdgeInsets.only(top: 2.0),
+                  child: Image.asset(
+                    "images/" + dList[index]["car_details"]["type"].toString() + ".png",
+                    width: 70,
+                  ),
                 ),
-              ),
-              title: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Text(
-                    dList[index]["name"],
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.black54,
-                    ),
-                  ),
-                  Text(
-                    dList[index]["car_details"]["car_model"],
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Colors.white54,
-                    ),
-                  ),
-                  SmoothStarRating(
-                    rating: 3.5,
-                    color: Colors.black,
-                    borderColor: Colors.black,
-                    allowHalfRating: true,
-                    starCount: 5,
-                    size: 15,
-                  ),
-                ],
-              ),
-              trailing: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    "\$ " + getFareAmountAccordingToVehicleType(index),
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 2,),
-                  Text(
-                    tripDirectionDetailsInfo != null ? tripDirectionDetailsInfo!.duration_text! : "",
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold,
+                title: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Text(
+                      dList[index]["name"],
+                      style: const TextStyle(
+                        fontSize: 14,
                         color: Colors.black54,
-                        fontSize: 12
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 2,),
-                  Text(
-                    tripDirectionDetailsInfo != null ? tripDirectionDetailsInfo!.distance_text! : "",
-                    style: const TextStyle(
+                    Text(
+                      dList[index]["car_details"]["car_model"],
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.white54,
+                      ),
+                    ),
+                    SmoothStarRating(
+                      rating: dList[index]["ratings"] == null ? 0.0 : double.parse(dList[index]["ratings"]),
+                      color: Colors.black,
+                      borderColor: Colors.black,
+                      allowHalfRating: true,
+                      starCount: 5,
+                      size: 15,
+                    ),
+                  ],
+                ),
+                trailing: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "\$ " + getFareAmountAccordingToVehicleType(index),
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: Colors.black54,
-                        fontSize: 12
+                      ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 2,),
+                    Text(
+                      tripDirectionDetailsInfo != null ? tripDirectionDetailsInfo!.duration_text! : "",
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black54,
+                          fontSize: 12
+                      ),
+                    ),
+                    const SizedBox(height: 2,),
+                    Text(
+                      tripDirectionDetailsInfo != null ? tripDirectionDetailsInfo!.distance_text! : "",
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black54,
+                          fontSize: 12
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           );

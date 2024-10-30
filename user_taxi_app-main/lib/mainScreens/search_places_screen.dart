@@ -1,8 +1,9 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:user_taxi_app/assistants/request_assistant.dart';
-import 'package:user_taxi_app/global/map_key.dart';
-import 'package:user_taxi_app/models/predicted_places.dart';
 
+import '../assistants/request_assistant.dart';
+import '../global/map_key.dart';
+import '../models/predicted_places.dart';
 import '../widgets/place_prediction_tile.dart';
 
 class SearchPlacesScreen extends StatefulWidget
@@ -23,7 +24,7 @@ class _SearchPlacesScreenState extends State<SearchPlacesScreen>
   {
     if(inputText.length > 1) //2 or more than 2 input characters
         {
-      String urlAutoCompleteSearch = "https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$inputText&key=$mapKey&components=country:PK";
+      String urlAutoCompleteSearch = "https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$inputText&key=$mapKey&components=country:CA";
 
       var responseAutoCompleteSearch = await RequestAssistant.receiveRequest(urlAutoCompleteSearch);
 

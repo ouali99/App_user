@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:user_taxi_app/global/global.dart';
 import 'package:user_taxi_app/splashScreen/splash_screen.dart';
 
+import '../mainScreens/about_screen.dart';
+import '../mainScreens/profile_screen.dart';
+import '../mainScreens/trips_history_screen.dart';
+
 
 class MyDrawer extends StatefulWidget
 {
@@ -72,7 +76,7 @@ class _MyDrawerState extends State<MyDrawer>
           GestureDetector(
             onTap: ()
             {
-
+              Navigator.push(context, MaterialPageRoute(builder: (c)=> TripsHistoryScreen()));
             },
             child: const ListTile(
               leading: Icon(Icons.history, color: Colors.white54,),
@@ -88,7 +92,7 @@ class _MyDrawerState extends State<MyDrawer>
           GestureDetector(
             onTap: ()
             {
-
+              Navigator.push(context, MaterialPageRoute(builder: (c)=> ProfileScreen()));
             },
             child: const ListTile(
               leading: Icon(Icons.person, color: Colors.white54,),
@@ -104,7 +108,7 @@ class _MyDrawerState extends State<MyDrawer>
           GestureDetector(
             onTap: ()
             {
-
+              Navigator.push(context, MaterialPageRoute(builder: (c)=> AboutScreen()));
             },
             child: const ListTile(
               leading: Icon(Icons.info, color: Colors.white54,),

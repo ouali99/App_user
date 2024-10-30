@@ -23,7 +23,8 @@ class _MySplashScreenState extends State<MySplashScreen>
 
   startTimer()
   {
-    fAuth.currentUser!= null ?AssistantMethods.readCurrentOnlineUserInfo() :null;
+    fAuth.currentUser != null ? AssistantMethods.readCurrentOnlineUserInfo() : null;
+
     Timer(const Duration(seconds: 3), () async
     {
       if(await fAuth.currentUser != null)
@@ -41,10 +42,10 @@ class _MySplashScreenState extends State<MySplashScreen>
   @override
   void initState() {
     super.initState();
-    
+
     startTimer();
   }
-  
+
   @override
   Widget build(BuildContext context)
   {
@@ -63,9 +64,9 @@ class _MySplashScreenState extends State<MySplashScreen>
               const Text(
                 "Uber & inDriver Clone App",
                 style: TextStyle(
-                  fontSize: 24,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold
+                    fontSize: 24,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold
                 ),
               ),
 
