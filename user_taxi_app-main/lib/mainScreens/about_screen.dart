@@ -52,7 +52,7 @@ class _AboutScreenState extends State<AboutScreen>
 
               //about you & your company - write some info
               const Text(
-                "This app has been developed by Muhammad Ali, "
+                "This app has been developed by koicela, "
                     "This is the world number 1 ride sharing app. Available for all. "
                     "20M+ people already use this app.",
                 textAlign: TextAlign.center,
@@ -67,7 +67,7 @@ class _AboutScreenState extends State<AboutScreen>
               ),
 
               const Text(
-                "This app has been developed by Muhammad Ali, "
+                "This app has been developed by koycela, "
                     "This is the world number 1 ride sharing app. Available for all. "
                     "20M+ people already use this app.",
                 textAlign: TextAlign.center,
